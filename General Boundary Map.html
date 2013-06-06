@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+  <head>
+
+    <!-- THERE ARE THREE THINGS YOU SHOULD CHANGE:
+    1. The title of the page (can be the name of the current city)
+    2. Define the variable 'city' to be CITY, STATE
+    3. Define the array 'data' in function 'drawBounds()' to be a list of latitude,longitude points of the city boundary (gotten from a KML file) -->
+
+    <title></title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <style>
+      html, body, #map-canvas {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
+    </style>
+  
+
+    <!-- WORKING API CALL WITH GEOMETRY LIBRARY (need for finding if a point is within polygon)-->
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?libraries=geometry&key=AIzaSyCeGd25WDa3-bo3WdBZLNAY5uB_0EoDvN0&sensor=false"></script>
+    
+    <script type="text/javascript">
+
+
+// ENTER CITY NAME HERE in format "City, State" //
+    var city = "Staten Island, New York"
+
+    var map;
+    var shape;
+    var geocoder;
+
+    //processes address & uses as center of map & puts a marker there
+    function setUp() {
+      geocoder = new google.maps.Geocoder();
+      var address = city;
+      geocoder.geocode( { 'address': address}, function(results, status) {
+        if (status == google.maps.GeocoderStatus.OK) {
+          map.setCenter(results[0].geometry.location);
+          var marker = new google.maps.Marker( {
+            map: map,
+            position: results[0].geometry.location
+          });
+        } else {
+          alert('Geocode was not successful for the following reason: '+ status);
+        }
+      });
+    } //function setUp
+
+    // creates map
+    function initializeMap() {
+      var mapOptions = {
+      zoom: 13,
+      mapTypeId: google.maps.MapTypeId.ROADMAP
+      };
+      map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+    }
+
+    // creates boundary overlay
+    function drawBounds() {
+
+      //input boundary points
+      var data = [];
+      
+      // creates new array for LatLng points
+      var points = new Array(data.length/2);
+      
+      //parses data array into LatLng points array
+      for (var i =0; i<data.l; i++) {
+        points[i]= new google.maps.LatLng(data[(i*2)+1],data[i*2]);
+      }
+      
+      //formatting the polygon
+      var polygonOptions = {
+        draggable: true,
+        clickable: false,
+        fillColor: 'blue',
+        fillOpacity: 0.3,
+        paths: points,
+        strokeColor: 'black',
+        strokeOpacity: 1.0,
+        strokeWeight: 0,
+      };
+
+      //create border polygon
+      shape = new google.maps.Polygon(polygonOptions);
+
+  } //function drawBounds()
+
+    
+  
+  function initialize() {
+    setUp();
+    initializeMap();
+    drawBounds();
+    shape.setMap(map);
+
+    google.maps.event.addListener(map, 'click', function(event) {
+      var within = google.maps.geometry.poly.containsLocation(event.latLng, shape);
+      console.log(within);
+    }); 
+  }
+
+  
+  google.maps.event.addDomListener(window, 'load', initialize);
+
+    
+  </script>
+  </head>
+  <body>
+    <div id="map-canvas"></div>
+  </body>
+</html>
